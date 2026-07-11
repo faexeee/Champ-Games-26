@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smoq Games 2026 - Master Edition</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #0b0b0f; color: #f1f1f6; margin: 0; padding: 15px; padding-bottom: 60px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        h1, h2, h3, h4 { color: #00ffcc; text-align: center; margin: 10px 0; text-shadow: 0 0 8px rgba(0,255,204,0.2); }
+        hr { border: 0; height: 1px; background: #2d2d3f; margin: 20px 0; }
+
+        /* Auth System */
+        .auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0b0b0f; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .auth-box { background: #14141f; padding: 30px; border-radius: 16px; border: 2px solid #00ffcc; width: 100%; max-width: 420px; box-shadow: 0 15px 35px rgba(0,0,0,0.7); }
+        .auth-box input { width: 100%; padding: 12px; margin-bottom: 15px; background: #20202e; border: 1px solid #3d3d52; border-radius: 8px; color: white; font-size: 16px; }
+        .auth-box input:focus { border-color: #00ffcc; outline: none; }
+        .auth-box button { width: 100%; padding: 12px; background: #00ffcc; color: #0b0b0f; border: none; font-weight: bold; font-size: 16px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .auth-box button:hover { background: #00cca3; }
+        .auth-box .toggle { text-align: center; color: #aaa; font-size: 14px; margin-top: 15px; cursor: pointer; text-decoration: underline; }
+
+        /* Dashboard & Stats */
+        .stats-bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; background: #14141f; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #232333; gap: 10px; }
+        .monety-display { font-weight: bold; color: #ffd700; font-size: 18px; display: flex; align-items: center; gap: 5px; }
+        .btn-logout { background: #ff4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: bold; }
+
+        /* Grid layouts */
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; }
+        .section { background: #14141f; padding: 20px; border-radius: 14px; margin-bottom: 20px; border: 1px solid #232333; }
+
+        /* Card Component */
+        .karta { display: inline-block; width: 110px; height: 160px; border-radius: 12px; padding: 6px; text-align: center; color: white; position: relative; box-shadow: 0 6px 12px rgba(0,0,0,0.6); border: 2px solid #555; overflow: hidden; background: linear-gradient(135deg, #2c3e50, #3498db); font-family: 'Arial Black', sans-serif; cursor: pointer; transition: transform 0.2s; user-select: none; }
+        .karta:hover { transform: scale(1.05); z-index: 10; }
+        .karta.gold { background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c); border-color: #ffd700; color: #000; }
+        .karta.event { background: linear-gradient(135deg, #4a00e0, #8e2de2, #ff007f); border-color: #ff007f; color: #fff; text-shadow: 1px 1px 2px #000; }
+        .karta .ovr { font-size: 22px; font-weight: 900; position: absolute; top: 4px; left: 8px; }
+        .karta .pos { font-size: 10px; font-weight: bold; position: absolute; top: 26px; left: 8px; background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 4px; }
+        .karta.gold .pos { color: #fff; background: rgba(0,0,0,0.6); }
+        .karta .photo { width: auto; height: 85px; margin-top: 18px; object-fit: contain; filter: drop-shadow(0px 5px 4px rgba(0,0,0,0.5)); position: relative; z-index: 2; }
+        .karta .name { position: absolute; bottom: 6px; left: 5%; width: 90%; font-weight: bold; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: rgba(0,0,0,0.6); padding: 3px 2px; border-radius: 5px; color: #fff; z-index: 3; }
+
+        /* Store Elements */
+        .pack-box { background: #1c1c28; border: 1px solid #3d3d52; border-radius: 10px; padding: 15px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
+        .pack-box.event-style { border: 2px solid #ff007f; box-shadow: 0 0 10px rgba(255,0,127,0.2); }
+        .btn-buy { background: #00ffcc; color: #0b0b0f; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; font-size: 14px; }
+        .btn-buy:hover { background: #00cca3; }
+
+        /* Pack Opening Result area */
+        .pack-result-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; background: #08080c; padding: 15px; border-radius: 10px; min-height: 100px; border: 1px dashed #444; margin-top: 10px; }
+
+        /* Pitch / Squad Builder */
+        .pitch { display: grid; gap: 12px; background: linear-gradient(to bottom, #134e2b, #1b663b); padding: 20px; border-radius: 16px; border: 4px solid #0f3d23; box-shadow: inset 0 0 30px rgba(0,0,0,0.7); margin-top: 15px; min-height: 480px; }
+        .slot { background: rgba(0, 0, 0, 0.45); border-radius: 12px; border: 2px dashed #00ffcc; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 170px; position: relative; padding: 2px; }
+        .slot.occupied { border: none; background: transparent; padding: 0; }
+        .slot-label { font-size: 12px; font-weight: bold; color: #00ffcc; background: rgba(0,0,0,0.7); padding: 2px 8px; border-radius: 4px; margin-bottom: 6px; z-index: 5; }
+
+        /* Form / Inputs Controls */
+        input[type="text"], input[type="number"], select { background: #1c1c28; color: white; border: 1px solid #3d3d52; padding: 10px; border-radius: 8px; width: 100%; margin-bottom: 10px; font-size: 14px; }
+        input:focus, select:focus { border-color: #00ffcc; outline: none; }
+        .btn-action { background: #222235; color: #00ffcc; border: 1px solid #00ffcc; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; font-size: 14px; }
+        .btn-action:hover { background: #00ffcc; color: #0b0b0f; }
+
+        /* Scrollable lists */
+        .scroll-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-height: 300px; overflow-y: auto; background: #08080c; padding: 10px; border-radius: 10px; margin-top: 10px; border: 1px solid #232333; }
+
+        /* Walkout Overlay Animation */
+        .walkout-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .walkout-title { font-size: 32px; font-weight: 900; color: #ffd700; margin-bottom: 20px; text-shadow: 0 0 20px rgba(255,215,0,0.6); animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .walkout-overlay .karta { transform: scale(2.2); margin-top: 60px; margin-bottom: 60px; box-shadow: 0 0 40px rgba(0,255,204,0.8); }
+        .walkout-close { background: white; color: black; border: none; padding: 12px 30px; font-weight: bold; border-radius: 8px; cursor: pointer; font-size: 16px; margin-top: 20px; }
+
+        /* Admin / Dev Box */
+        .admin-panel { background: #220c0c; border: 1px solid #ff4444; padding: 15px; border-radius: 12px; margin-top: 40px; font-size: 13px; }
+        .admin-db-view { font-family: monospace; background: #090303; padding: 8px; max-height: 120px; overflow-y: auto; border-radius: 6px; border: 1px solid #552222; margin-top: 8px; color: #ff9999; }
+    </style>
+</head>
+<body>
+
+<!-- ANIMACJA WALKOUTU (TRAFIENIE KARTY >= 91 OVR) -->
+<div id="walkoutScreen" class="walkout-overlay">
+    <div class="walkout-title">💥 WALKOUT! EXCELLENT CARD TRAFFICKED! 💥</div>
+    <div id="walkoutCardPlaceholder"></div>
+    <button class="walkout-close" onclick="zamknijWalkout()">CONFIRM</button>
+</div>
+
+<!-- SYSTEM REJESTRACJI I LOGOWANIA -->
+<div id="authScreen" class="auth-overlay">
+    <div class="auth-box">
+        <h2 id="authTitle">Sign In</h2>
+        <input type="text" id="authNick" placeholder="Username (Nick)">
+        <input type="text" id="authPassword" placeholder="Password" style="-webkit-text-security: disc; text-security: disc;">
+        <button onclick="wykonajAutentykacje()">Submit</button>
+        <div class="toggle" id="authToggle" onclick="przelaczTrybAuth()">New player? Register here</div>
+    </div>
+</div>
+
+<!-- GŁÓWNA ZAWARTOŚĆ GRY -->
+<div class="container" id="gameApp" style="display:none;">
+    
+    <h1>SMOQ GAMES 2026</h1>
+    
+    <div class="stats-bar">
+        <div>User: <strong id="lblNick" style="color:#00ffcc;">-</strong></div>
+        <div class="monety-display"><span id="lblMonety">0</span> 🪙</div>
+        <button class="btn-logout" onclick="wyloguj()">Logout</button>
+    </div>
+
+    <!-- SKLEP Z PACZKAMI -->
+    <div class="section">
+        <h2>1. Packs Store</h2>
+        <div class="grid-2">
+            <!-- Paczka Podstawowa (Zwykła) -->
+            <div class="pack-box">
+                <h3>Base Gold Pack</h3>
+                <p style="font-size: 12px; color: #aaa;">1x Card (80-88 OVR) [Probabilistic Chance] + 6x Random Base Cards.</p>
+                <button class="btn-buy" onclick="kupPaczkeZwykla()">15,000 🪙</button>
+            </div>
+            <!-- Dynamiczna Paczka Eventowa -->
+            <div class="pack-box event-style">
+                <h3 id="lblNazwaPaczkiEvent">Legends Grecrys</h3>
+                <p style="font-size: 12px; color: #ff007f;">Contains Event Cards + 8x Random Base Cards.</p>
+                <select id="wyborTypuPaczkiEvent" style="margin-top:5px; padding:5px; font-size:12px;">
+                    <option value="1">1x Event Card Pack (50,000 🪙)</option>
+                    <option value="2">2x Event Card Pack (95,000 🪙)</option>
+                    <option value="3">3x Event Card Pack (135,000 🪙)</option>
+                    <option value="4">4x Event Card Pack (175,000 🪙)</option>
+                </select>
+                <button class="btn-buy" style="background:#ff007f; color:white;" onclick="kupPaczkeEventowa()">Open Selected</button>
+            </div>
+        </div>
+
+        <h4 style="margin-top: 15px; text-align: left;">Latest Pack Content:</h4>
+        <div id="paczkaResultArea" class="pack-result-container">
+            <span style="color:#666; font-size:13px; align-self:center;">Open a pack to review dropped footballers here.</span>
+        </div>
+    </div>
+
+    <!-- OFERTY SPECJALNE W SKLEPIE -->
+    <div class="section">
+        <h2>2. Special Market Offers</h2>
+        <div class="grid-2" id="kontenerOfertSklepu"></div>
+    </div>
+
+    <!-- AKTYWNY SKŁAD - BOISKO -->
+    <div class="section">
+        <h2>3. Active Squad</h2>
+        <label for="wyborFormacji">Select Tactics Formation:</label>
+        <select id="wyborFormacji" onchange="renderujBoisko()">
+            <option value="4-3-3">4-3-3</option>
+            <option value="4-4-2">4-4-2</option>
+            <option value="4-2-4">4-2-4</option>
+            <option value="5-4-1">5-4-1</option>
+            <option value="3-5-2">3-5-2</option>
+            <option value="3-4-3">3-4-3</option>
+        </select>
+        
+        <div style="text-align: center; margin: 5px 0; font-size: 16px;">
+            Squad Rating OVR: <strong id="lblSkladOVR" style="color:#ffd700; font-size:20px;">0</strong>
+        </div>
+
+        <div id="boiskoGry" class="pitch"></div>
+        <p style="font-size:11px; color:#aaa; text-align:center; margin-top:5px;">💡 Click on any card in your Collection Below to push it into matching tactical slot on the field!</p>
+    </div>
+
+    <!-- KOLEKCJA KART GRACZA -->
+    <div class="section">
+        <h2>4. Your Cards Collection</h2>
+        <div id="kolekcjaGracza" class="scroll-list"></div>
+    </div>
+
+    <!-- MECZE TOWARZYSKIE (ROOMY) -->
+    <div class="section">
+        <h2>5. Live Friendly Matches Room</h2>
+        <div class="grid-2">
+            <div>
+                <button class="btn-action" style="background:#1b663b; color:#fff;" onclick="stworzPokojMeczu()">Create Friendly Match Room</button>
+            </div>
+            <div>
+                <button class="btn-action" style="background:#2980b9; color:#fff;" onclick="pokazOknoDolaczania()">Join Existing Room Code</button>
+            </div>
+        </div>
+        
+        <div id="sekcjaPokojuMeczu" style="margin-top:15px; display:none; padding:12px; background:#0e0e14; border-radius:8px; border:1px solid #333;">
+            <p id="lblStatusPokoju" style="font-weight:bold; text-align:center; margin:5px 0;"></p>
+            <div id="kontenerWpisywaniaKodu" style="display:none; margin-top:8px;">
+                <input type="text" id="inputKodPokoju" placeholder="Enter 6-character room code (e.g. ABC123)">
+                <button class="btn-buy" onclick="zatwierdzDolaczenieDoPokoju()">Connect & Play</button>
+            </div>
+            <div id="akcjePokojuMeczu" style="display:none; text-align:center; margin-top:10px;">
+                <button class="btn-action" style="background:#ffaa00; color:#000;" onclick="rozegrajMeczWRoomie()">Simulate Match Engine</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CODZIENNE NAGRODY -->
+    <div class="section">
+        <h2>6. Calendar Daily Rewards</h2>
+        <button class="btn-action" style="background:linear-gradient(90deg, #ffd700, #ffa500); color:black;" onclick="odbierzCodziennaNagrodęApp()">
+            Claim Daily Login Bonus (Resets at 08:00 AM)
+        </button>
+        <p id="lblStatusNagrody" style="text-align:center; margin-top:6px; font-size:13px; font-weight:bold;"></p>
+    </div>
+
+    <!-- SYSTEM KODÓW -->
+    <div class="section">
+        <h2>7. Promotional Redemptions</h2>
+        <input type="text" id="inputPromoKod" placeholder="Type secret promo code here...">
+        <button class="btn-action" onclick="zrealizujPromoKod()">Redeem Code</button>
+        <p id="lblStatusKodu" style="text-align:center; margin-top:6px; font-size:13px; font-weight:bold;"></p>
+    </div>
+
+    <!-- PANEL ADMINA / KREATORA -->
+    <div class="section" style="background:#191924; border-color:#00ffcc;">
+        <h2>🛠️ Game Architect Console (Admin Panel)</h2>
+        <p style="font-size:11px; color:#ccc; margin-top:-5px;">Create Custom Cards, add Store Offers, alter Event parameters dynamically.</p>
+        
+        <hr style="margin:10px 0;">
+        
+        <h4>A. Card Creator Wizard</h4>
+        <div class="grid-2">
+            <input type="text" id="admCardName" placeholder="Player Name">
+            <input type="number" id="admCardOvr" placeholder="OVR (1-99)" min="1" max="99">
+            <select id="admCardPos">
+                <option value="GK">GK</option><option value="CB">CB</option><option value="LB">LB</option><option value="RB">RB</option>
+                <option value="LM">LM</option><option value="RM">RM</option><option value="CDM">CDM</option><option value="CAM">CAM</option>
+                <option value="CM">CM</option><option value="RW">RW</option><option value="LW">LW</option><option value="ST">ST</option>
+            </select>
+            <select id="admCardType">
+                <option value="gold">Base Gold</option>
+                <option value="event">Event Card</option>
+            </select>
+            <input type="text" id="admCardImg" placeholder="Image URL (or blank for default)">
+        </div>
+        <button class="btn-action" style="margin-top:8px;" onclick="admUtworzKartaDoBazy()">Inject Card to Database</button>
+
+        <hr style="margin:15px 0;">
+
+        <h4>B. Modify Event Pack Configuration</h4>
+        <div class="grid-2">
+            <input type="text" id="admEventName" placeholder="New Event Name (e.g. Legends Grecrys)">
+        </div>
+        <button class="btn-action" style="margin-top:8px; background:#ff007f; color:#fff; border:none;" onclick="admZmienUstawieniaEventu()">Apply Event Settings</button>
+
+        <hr style="margin:15px 0;">
+
+        <h4>C. Add Directly Purchased Card / Offer to Store</h4>
+        <div class="grid-2">
+            <select id="admWyborKartyDoOferty"></select>
+            <input type="number" id="admCenaOferty" placeholder="Price (Coins)">
+            <select id="admDodatekPaczki">
+                <option value="0">No Addons</option>
+                <option value="2">Include Event Pack(2) Addon</option>
+            </select>
+        </div>
+        <button class="btn-action" style="margin-top:8px; background:#ffd700; color:#000;" onclick="admDodajOferteDoSklepu()">Publish Market Offer</button>
+
+        <div class="admin-panel">
+            <strong style="color:#ff5555;">🔒 Database Viewport (Admin Restricted View):</strong>
+            <div class="admin-db-view" id="adminDatabaseMonitor"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// --- GLOBALNA BAZA I STRUKTURY DANYCH GRY ---
+let BazaUzytkownikow = JSON.parse(localStorage.getItem('smoq26_baza_users')) || {};
+let AktualnyGracz = null;
+let trybRejestracji = false;
+
+// Dynamiczne ustawienia aktywnego wydarzenia
+let UstawieniaEventu = JSON.parse(localStorage.getItem('smoq26_event_settings')) || {
+    nazwa: "Legends Grecrys"
+};
+
+// Generowane przez system pule kart
+let GLOBALNA_BAZA_KART = JSON.parse(localStorage.getItem('smoq26_baza_kart')) || [
+    { id: "c1", nazwa: "Cristiano Ronaldo", ovr: 92, pozycja: "ST", img: "https://www.futwiz.com/assets/img/fc24/renders/20801.png", typ: "event" },
+    { id: "c2", nazwa: "Cruyff", ovr: 91, pozycja: "CAM", img: "https://www.futwiz.com/assets/img/fc24/renders/237069.png", typ: "event" },
+    { id: "c3", nazwa: "Dembele", ovr: 83, pozycja: "RW", img: "https://www.futwiz.com/assets/img/fc24/renders/231443.png", typ: "gold" },
+    { id: "c4", nazwa: "Lewandowski", ovr: 88, pozycja: "ST", img: "https://www.futwiz.com/assets/img/fc24/renders/188545.png", typ: "gold" },
+    { id: "c5", nazwa: "Mbappe", ovr: 91, pozycja: "ST", img: "https://www.futwiz.com/assets/img/fc24/renders/231747.png", typ: "event" },
+    { id: "c6", nazwa: "Bellingham", ovr: 86, pozycja: "CM", img: "https://www.futwiz.com/assets/img/fc24/renders/256630.png", typ: "gold" },
+    { id: "c7", nazwa: "Van Dijk", ovr: 89, pozycja: "CB", img: "https://www.futwiz.com/assets/img/fc24/renders/203376.png", typ: "gold" },
+    { id: "c8", nazwa: "Courtois", ovr: 90, pozycja: "GK", img: "https://www.futwiz.com/assets/img/fc24/renders/192119.png", typ: "gold" }
+];
+
+// Wygenerowane automatycznie paczki fillerów (zwykłe karty o niskim ovr)
+const FILLERY_ZWYKLE = [
+    { nazwa: "Kiwior", ovr: 74, pozycja: "CB", img: "https://www.futwiz.com/assets/img/fc24/renders/263622.png", typ: "gold" },
+    { nazwa: "Cash", ovr: 79, pozycja: "RB", img: "https://www.futwiz.com/assets/img/fc24/renders/234057.png", typ: "gold" },
+    { nazwa: "Zieliński", ovr: 83, pozycja: "CM", img: "https://www.futwiz.com/assets/img/fc24/renders/212404.png", typ: "gold" },
+    { nazwa: "Bednarek", ovr: 72, pozycja: "CB", img: "https://www.futwiz.com/assets/img/fc24/renders/216237.png", typ: "gold" },
+    { nazwa: "Milany", ovr: 75, pozycja: "LM", img: "https://www.futwiz.com/assets/img/fc24/renders/241243.png", typ: "gold" },
+    { nazwa: "Frankowski", ovr: 78, pozycja: "RM", img: "https://www.futwiz.com/assets/img/fc24/renders/235236.png", typ: "gold" },
+    { nazwa: "Moder", ovr: 73, pozycja: "CDM", img: "https://www.futwiz.com/assets/img/fc24/renders/254231.png", typ: "gold" },
+    { nazwa: "Szymański", ovr: 81, pozycja: "CAM", img: "https://www.futwiz.com/assets/img/fc24/renders/238991.png", typ: "gol
